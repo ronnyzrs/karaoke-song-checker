@@ -87,13 +87,17 @@ app.get("/api/songs", async (req, res) => {
     });
   }
 
-  const browser = await puppeteer.default.launch({
+ const puppeteer = await import("puppeteer");
+
+const browser = await puppeteer.default.launch({
   headless: true,
+  executablePath: "/opt/render/.cache/puppeteer/chrome/linux-152.0.7977.42/chrome-linux64/chrome",
   args: [
     "--no-sandbox",
     "--disable-setuid-sandbox"
   ]
 });
+
   const page = await browser.newPage();
 
   try {
