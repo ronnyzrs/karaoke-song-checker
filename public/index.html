@@ -1,193 +1,326 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <title>カラオケ配信曲検索ツール</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>KARAOKE BINGO</title>
+
   <style>
-    body {
-      font-family: sans-serif;
-      background: #2f2f2f;
-      color: #fff;
-      margin: 0;
-      padding: 20px;
+    * {
+      box-sizing: border-box;
     }
 
-    h1 {
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: sans-serif;
+      color: #fff;
+      background:
+        radial-gradient(circle at top, #3d1f5c, #17131f 55%, #0d0b12);
+      padding: 30px 15px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
       text-align: center;
     }
 
-    .container {
+    h1 {
+      margin: 10px 0 5px;
+      font-size: clamp(32px, 7vw, 56px);
+      letter-spacing: 4px;
+    }
+
+    .subtitle {
+      margin: 0 0 25px;
+      color: #cfc7d8;
+    }
+
+    .info {
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+
+    #bingoCount {
+      font-size: 28px;
+      font-weight: bold;
+      color: #ffcf4a;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      width: 100%;
+      max-width: 750px;
+      margin: 0 auto 25px;
+    }
+
+    .cell {
+      aspect-ratio: 1 / 1;
+      border: 2px solid #68467d;
+      border-radius: 12px;
+      background: rgba(35, 27, 45, 0.95);
+      color: #fff;
+      padding: 8px;
+      font-size: clamp(11px, 2vw, 17px);
+      font-weight: bold;
+      cursor: pointer;
       display: flex;
-      gap: 20px;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: 0.2s;
+      user-select: none;
     }
 
-    .column {
-      flex: 1;
-      background: #1e1e1e;
-      border-radius: 10px;
-      padding: 15px;
-      overflow-y: auto;
-      max-height: 80vh;
+    .cell:hover {
+      transform: translateY(-2px);
+      border-color: #b66ee0;
+      background: #382545;
     }
 
-    .song {
-      padding: 6px 0;
-      border-bottom: 1px solid #333;
+    .cell.done {
+      background: linear-gradient(135deg, #b23cff, #6c2bc9);
+      border-color: #e0aaff;
+      box-shadow: 0 0 15px rgba(190, 80, 255, 0.5);
+      text-decoration: line-through;
     }
 
-    .dam { color: #4fc3f7; }
-    .joy { color: #ff6b6b; }
-
-    .count {
-      font-size: 14px;
-      opacity: 0.7;
+    .cell.free {
+      background: linear-gradient(135deg, #ffb52e, #e47b19);
+      border-color: #ffe0a0;
+      color: #351d00;
+      cursor: default;
     }
 
-    .dam { color: #4fc3f7; }
-    .joy { color: #ff6b6b; }
+    .cell.bingo {
+      animation: bingo 0.6s infinite alternate;
+    }
 
-    .search-box {
-  max-width: 800px;
-  margin: 30px auto;
-  padding: 20px;
-  background: #1e1e1e;
-  border-radius: 12px;
-}
+    @keyframes bingo {
+      from {
+        transform: scale(1);
+      }
+      to {
+        transform: scale(1.04);
+      }
+    }
 
-.search-box label {
-  display: block;
-  margin-top: 12px;
-  margin-bottom: 6px;
-}
+    button {
+      border: none;
+      border-radius: 30px;
+      padding: 13px 30px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #fff;
+      background: linear-gradient(135deg, #a83ee8, #6430c7);
+      cursor: pointer;
+      box-shadow: 0 5px 20px rgba(120, 50, 200, 0.3);
+      transition: 0.2s;
+    }
 
-.search-box input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-}
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(150, 70, 230, 0.5);
+    }
 
-.search-box button {
-  display: block;
-  margin: 20px auto 0;
-  padding: 10px 30px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-}
+    #message {
+      min-height: 45px;
+      margin-top: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #ffcf4a;
+    }
 
-#error {
-  text-align: center;
-  color: #ff6b6b;
-  margin: 15px;
-}
+    @media (max-width: 600px) {
+      body {
+        padding: 20px 8px;
+      }
+
+      .board {
+        gap: 4px;
+      }
+
+      .cell {
+        border-radius: 7px;
+        border-width: 1px;
+        padding: 4px;
+      }
+    }
   </style>
 </head>
+
 <body>
 
-<h1>🎤 カラオケ曲一覧</h1>
-<p>DAM/JOUSOUD の配信曲を検索したい人用ツール</p>
+  <div class="app">
 
+    <h1>🎤 KARAOKE BINGO</h1>
 
-<div class="search-box">
+    <p class="subtitle">
+      今日のカラオケをもっと楽しく！
+    </p>
 
-  <label>DAM アーティストページ</label>
-  <input
-    type="text"
-    id="damUrl"
-    placeholder="https://www.clubdam.com/karaokesearch/artistleaf.html?artistCode=..."
-  />
+    <div class="info">
+      BINGO
+      <span id="bingoCount">0</span>
+      列
+    </div>
 
-  <label>JOYSOUND アーティストページ</label>
-  <input
-    type="text"
-    id="joyUrl"
-    placeholder="https://www.joysound.com/web/search/artist/..."
-  />
+    <div id="board" class="board"></div>
 
-  <button id="searchButton">検索</button>
+    <button id="newGame">
+      🎲 新しいカード
+    </button>
 
-</div>
+    <div id="message"></div>
 
-<div id="loading" style="display: none;">
-  曲情報を取得中...(30秒～1分ほどかかる場合があります) 
-</div>
-
-<div id="error"></div>
-
-<div class="container">
-  <div class="column">
-    <h2 class="dam">DAM <span id="damCount" class="count"></span></h2>
-    <div id="damList"></div>
   </div>
 
-  <div class="column">
-    <h2 class="joy">JOYSOUND <span id="joyCount" class="count"></span></h2>
-    <div id="joyList"></div>
-  </div>
-</div>
+  <script>
+    const missions = [
+      "90点以上出す",
+      "80点以上出す",
+      "アニソンを歌う",
+      "バラードを歌う",
+      "ロックを歌う",
+      "洋楽を歌う",
+      "演歌を歌う",
+      "1990年代の曲を歌う",
+      "2000年代の曲を歌う",
+      "2010年代の曲を歌う",
+      "2020年代の曲を歌う",
+      "女性ボーカルの曲を歌う",
+      "男性ボーカルの曲を歌う",
+      "本人映像の曲を歌う",
+      "普段歌わない曲を歌う",
+      "普段より高いキーで歌う",
+      "普段より低いキーで歌う",
+      "デュエットする",
+      "タイトルに季節が入る曲を歌う",
+      "タイトルが1文字の曲を歌う",
+      "3分以内の曲を歌う",
+      "5分以上の曲を歌う",
+      "ランキング上位の曲を歌う",
+      "今の季節に合った曲を歌う",
+    ];
 
-<script>
-  document.getElementById("searchButton").addEventListener("click", async () => {
-    const damUrl = document.getElementById("damUrl").value.trim();
-    const joyUrl = document.getElementById("joyUrl").value.trim();
+    const board = document.getElementById("board");
+    const bingoCount = document.getElementById("bingoCount");
+    const message = document.getElementById("message");
+    const newGame = document.getElementById("newGame");
 
-    const loading = document.getElementById("loading");
-    const error = document.getElementById("error");
+    let cells = [];
 
-    if (!damUrl || !joyUrl) {
-      error.textContent = "DAMとJOYのURLを入力してください";
-      return;
+    function shuffle(array) {
+      const result = [...array];
+
+      for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+
+      return result;
     }
 
-    error.textContent = "";
-    loading.style.display = "block";
+    function createBoard() {
+      board.innerHTML = "";
+      message.textContent = "";
 
-    // 前回の結果を消す
-    document.getElementById("damList").innerHTML = "";
-    document.getElementById("joyList").innerHTML = "";
+      const shuffled = shuffle(missions);
 
-    try {
-      const params = new URLSearchParams({
-        dam: damUrl,
-        joy: joyUrl
+      cells = [];
+
+      for (let i = 0; i < 25; i++) {
+        const cell = document.createElement("div");
+
+        cell.className = "cell";
+
+        if (i === 12) {
+          cell.textContent = "FREE";
+          cell.classList.add("free", "done");
+        } else {
+          const missionIndex = i < 12 ? i : i - 1;
+
+          cell.textContent = shuffled[missionIndex];
+
+          cell.addEventListener("click", () => {
+            cell.classList.toggle("done");
+            checkBingo();
+          });
+        }
+
+        board.appendChild(cell);
+        cells.push(cell);
+      }
+
+      checkBingo();
+    }
+
+    function checkBingo() {
+      const lines = [];
+
+      // 横
+      for (let row = 0; row < 5; row++) {
+        lines.push([
+          row * 5,
+          row * 5 + 1,
+          row * 5 + 2,
+          row * 5 + 3,
+          row * 5 + 4
+        ]);
+      }
+
+      // 縦
+      for (let col = 0; col < 5; col++) {
+        lines.push([
+          col,
+          col + 5,
+          col + 10,
+          col + 15,
+          col + 20
+        ]);
+      }
+
+      // 左上 → 右下
+      lines.push([0, 6, 12, 18, 24]);
+
+      // 右上 → 左下
+      lines.push([4, 8, 12, 16, 20]);
+
+      let count = 0;
+
+      lines.forEach(line => {
+        const isBingo = line.every(index =>
+          cells[index].classList.contains("done")
+        );
+
+        if (isBingo) {
+          count++;
+
+          line.forEach(index => {
+            cells[index].classList.add("bingo");
+          });
+        }
       });
 
-      const res = await fetch(`/api/songs?${params}`);
+      bingoCount.textContent = count;
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "取得に失敗しました");
+      if (count > 0) {
+        message.textContent = `🎉 ${count} BINGO！`;
+      } else {
+        message.textContent = "";
       }
-
-      function render(list, id) {
-        const el = document.getElementById(id);
-
-        list.forEach(song => {
-          const div = document.createElement("div");
-          div.className = "song";
-          div.textContent = song;
-          el.appendChild(div);
-        });
-      }
-
-      render(data.damSongs, "damList");
-      render(data.joySongs, "joyList");
-
-      console.log(data);
-
-    } catch (err) {
-  console.error(err);
-  error.textContent = err.message;
-} finally {
-      loading.style.display = "none";
     }
-  });
-</script>
+
+    newGame.addEventListener("click", createBoard);
+
+    createBoard();
+  </script>
 
 </body>
 </html>
