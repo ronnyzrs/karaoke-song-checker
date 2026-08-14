@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>カラオケ配信曲検索ツール</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #2f2f2f;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .container {
+      display: flex;
+      gap: 20px;
+    }
+
+    .column {
+      flex: 1;
+      background: #1e1e1e;
+      border-radius: 10px;
+      padding: 15px;
+      overflow-y: auto;
+      max-height: 80vh;
+    }
+
+    .song {
+      padding: 6px 0;
+      border-bottom: 1px solid #333;
+    }
+
+    .dam { color: #4fc3f7; }
+    .joy { color: #ff6b6b; }
+
+    .count {
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    .dam { color: #4fc3f7; }
+    .joy { color: #ff6b6b; }
+
+    .search-box {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #1e1e1e;
+  border-radius: 12px;
+}
+
+.search-box label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 6px;
+}
+
+.search-box input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.search-box button {
+  display: block;
+  margin: 20px auto 0;
+  padding: 10px 30px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#error {
+  text-align: center;
+  color: #ff6b6b;
+  margin: 15px;
+}
+  </style>
+</head>
+<body>
+
+<h1>🎤 カラオケ曲一覧</h1>
+<p>DAM/JOUSOUD の配信曲を検索したい人用ツール</p>
+
+
+<div class="search-box">
+
+  <label>DAM アーティストページ</label>
+  <input
+    type="text"
+    id="damUrl"
+    placeholder="https://www.clubdam.com/karaokesearch/artistleaf.html?artistCode=..."
+  />
+
+  <label>JOYSOUND アーティストページ</label>
+  <input
+    type="text"
+    id="joyUrl"
+    placeholder="https://www.joysound.com/web/search/artist/..."
+  />
+
+  <button id="searchButton">検索</button>
+
+</div>
+
+<div id="loading" style="display: none;">
+  曲情報を取得中...(30秒～1分ほどかかる場合があります) 
+</div>
+
+<div id="error"></div>
+
+<div class="container">
+  <div class="column">
+    <h2 class="dam">DAM <span id="damCount" class="count"></span></h2>
+    <div id="damList"></div>
+  </div>
+
+  <div class="column">
+    <h2 class="joy">JOYSOUND <span id="joyCount" class="count"></span></h2>
+    <div id="joyList"></div>
+  </div>
+</div>
+
+<script>
+  document.getElementById("searchButton").addEventListener("click", async () => {
+    const damUrl = document.getElementById("damUrl").value.trim();
+    const joyUrl = document.getElementById("joyUrl").value.trim();
+
+    const loading = document.getElementById("loading");
+    const error = document.getElementById("error");
+
+    if (!damUrl || !joyUrl) {
+      error.textContent = "DAMとJOYのURLを入力してください";
+      return;
+    }
+
+    error.textContent = "";
+    loading.style.display = "block";
+
+    // 前回の結果を消す
+    document.getElementById("damList").innerHTML = "";
+    document.getElementById("joyList").innerHTML = "";
+
+    try {
+      const params = new URLSearchParams({
+        dam: damUrl,
+        joy: joyUrl
+      });
+
+      const res = await fetch(`/api/songs?${params}`);
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "取得に失敗しました");
+      }
+
+      function render(list, id) {
+        const el = document.getElementById(id);
+
+        list.forEach(song => {
+          const div = document.createElement("div");
+          div.className = "song";
+          div.textContent = song;
+          el.appendChild(div);
+        });
+      }
+
+      render(data.damSongs, "damList");
+      render(data.joySongs, "joyList");
+
+      console.log(data);
+
+    } catch (err) {
+  console.error(err);
+  error.textContent = err.message;
+} finally {
+      loading.style.display = "none";
+    }
+  });
+</script>
+
+</body>
+</html>

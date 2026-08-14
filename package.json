@@ -1,0 +1,16 @@
+{
+  "name": "karaoke",
+  "version": "1.0.0",
+  "main": "dam.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^5.2.1",
+    "puppeteer": "^25.7.0"
+  }
+}
